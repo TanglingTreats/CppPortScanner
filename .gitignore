@@ -1,0 +1,7 @@
+CMakeCache.txt
+compile_flags.txt
+compile_commands.json
+CMakeFiles/
+build/
+
+nmap
