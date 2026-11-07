@@ -8,6 +8,15 @@
 #define ERR_CONN -1
 #define MAX_PORTS 65535
 
+#define OPT_HELP_SHORT 'h'
+#define OPT_HELP_LONG "--help"
+
+#define OPT_PORT_SHORT 'p'
+#define OPT_PORT_LONG "--port"
+
+#define OPT_VERBOSE_SHORT 'v'
+#define OPT_VERBOSE_LONG "--verbose"
+
 using std::cout; using std::endl;
 
 void PrintHelp();
@@ -23,7 +32,11 @@ enum class ScanType {
 struct ClientConfig {
   bool help = false;
   bool verbose = false;
+  
   uint16_t noOfPorts = MAX_PORTS;
+  uint16_t portStart = 1;
+  uint16_t portEnd = MAX_PORTS;
+  
   ScanType scanType = ScanType::SynScan;
 };
 
@@ -52,21 +65,28 @@ int main(int argc, char *argv[]) {
       if (arg.at(0) == '-' && arg.at(1) != '-') {
         for (auto opt : arg) {
           switch (opt) {
-          case 'h':
+          case OPT_HELP_SHORT:
             config.help = true;
+            break;
+          case OPT_PORT_SHORT:
+
+            break;
+          case OPT_VERBOSE_SHORT:
+            config.verbose = true;
             break;
           }
         }
       } else {
         // Parse long options
-        if (arg == "--help") {
+        if (arg == OPT_HELP_LONG) {
           config.help = true;
+        } else if (arg == OPT_PORT_LONG) {
+
+        } else if (arg == OPT_VERBOSE_LONG) {
+          config.verbose = true;
         }
       }
       
-
-      
-      cout << arg << endl;
     }
 
     // Verify IP format
@@ -91,12 +111,13 @@ int main(int argc, char *argv[]) {
   for (int i = 1; i < MAX_PORTS; i++) {
     addr.sin_port = htons(i);
 
-  
-    if (connect(serverSock, (struct sockaddr *)&addr, sizeof(addr)) != ERR_CONN) {
-      cout << std::format("PORT {} IS OPEN", i) << endl;
-    } else {
-      cout << std::format("PORT {} IS NOT OPEN", i) << endl;
-      cout << std::format("ERR {}", errno) << endl;
+    if (config.verbose) {
+      if (connect(serverSock, (struct sockaddr *)&addr, sizeof(addr)) != ERR_CONN) {
+        cout << std::format("PORT {} IS OPEN", i) << endl;
+      } else {
+        cout << std::format("PORT {} IS NOT OPEN", i) << endl;
+        cout << std::format("ERR {}", errno) << endl;
+      }      
     }
 
     close(serverSock);
@@ -107,5 +128,9 @@ int main(int argc, char *argv[]) {
 }
 
 void PrintHelp() {
-  cout << "Printing help menu" << endl;
+  cout << "Usage: simpnmap [options]\n\n"
+       << "Options:\n"
+       << " -h, --help      Display help screen\n"
+       << " -p, --port      Specify a port or range of ports. e.g. 8080, 22-8080\n"
+       << " -v, --verbose   Enable explicit debug logs\n";
 }
